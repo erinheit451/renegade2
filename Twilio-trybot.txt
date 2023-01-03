@@ -1,0 +1,26 @@
+import os
+import openai
+from flask import Flask, request
+from twilio.twiml.messaging_response import MessagingResponse
+
+app = Flask(__name__)
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+@app.route("/sms", methods=["POST"])
+def sms():
+    # Get the message body from the request
+    body = request.form["Body"]
+
+    # Generate a response
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=f"Harley helpline! How can I smash your problems into itty bitty pieces?\n{body}",
+        temperature=0.6,
+    )
+    chatbot_response = response.choices[0].text
+
+    # Create a MessagingResponse object to build the TwiML response
+    twiml = MessagingResponse()
+    twiml.message(chatbot_response)
+
+    return str(twiml)
